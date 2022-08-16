@@ -102,9 +102,9 @@ preprocessed_df <- t1_qa %>%
     mutate(sex = factor(sex, levels = c(1, 2), labels = c("Male", "Female"))) %>% 
     mutate(race2 = factor(race2, levels = 1:3, labels = c("White", "Black", "Others"))) %>% 
     mutate(handednessv2 = factor(handednessv2)) %>% 
-    mutate(is_td = if_else(goassessDxpmr4 == "1TD", 1, 0)) %>% 
-    # mutate(tse = if_else(tse >= 3, 3, tse)) %>% 
-    select(bblid, scanid, age, sex, medu1, tse, trauma_type, envSES, is_td, 
+    mutate(is_td = if_else(goassessDxpmr4 == "1TD", 1, 0)) %>%
+    select(bblid, scanid, averageManualRating,
+           age, sex, race2, medu1, tse, race2, trauma_type, envSES, is_td, 
            overall_psychopathology_4factorv2,
            mood_corrtraitsv2:fear_corrtraitsv2,
            Overall_Efficiency_Ar,
@@ -118,16 +118,15 @@ preprocessed_df <- t1_qa %>%
         .before = overall_psychopathology_4factorv2) %>% 
     drop_na()
 
-
 preprocessed_df$tse_ar <- preprocessed_df %>% 
     #lm(formula = tse ~ sex * age + I(age^2)) %>% 
-    lm(formula = tse ~ sex * age) %>% 
+    lm(formula = tse ~ age) %>% 
     resid()
 preprocessed_df$srs <- preprocessed_df %>% 
     lm(formula = -overall_functioning ~ tse) %>% 
     resid()
-preprocessed_df$srs_ses <- preprocessed_df %>% 
-    lm(formula = -overall_functioning ~ tse + envSES + medu1) %>% 
-    resid()
+#preprocessed_df$srs_ses <- preprocessed_df %>% 
+#    lm(formula = -overall_functioning ~ tse + envSES + medu1) %>% 
+#    resid()
 
 write_rds(preprocessed_df, here("data", "processed", "preprocessed_data.rds"))
