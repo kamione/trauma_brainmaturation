@@ -57,15 +57,20 @@ atypical_qri_df %>%
 
 # Correlation between Stress Load and Others -----------------------------------
 atypical_qri_df %>% 
-    select(aQRI, tse,
+    select(aQRI, tse_ar,
            overall_functioning:F4_Executive_Efficiency_Ar) %>% 
-    correlation::correlation(method = "spearman", p_adjust = "fdr")
+    correlation::correlation(method = "spearman", p_adjust = "fdr") %>% 
+    as_tibble() %>% 
+    filter(Parameter1 == "aQRI")
 
 corr_res <- atypical_qri_df %>% 
-    select(aQRI, tse,
-           overall_functioning:F4_Executive_Efficiency_Ar) %>% 
+    select(aQRI, tse_ar,
+           overall_functioning:Overall_Efficiency_Ar,
+           F4_Executive_Efficiency_Ar, F3_Memory_Efficiency_Ar,
+           F2_Complex_Reasoning_Efficiency_Ar, F1_Social_Cognition_Efficiency_Ar
+    ) %>%
     rename(
-        "Traumatic Stress Load" = tse,
+        "Age-and-sex-adjusted TSL" = tse_ar,
         "Overall Functioning" = overall_functioning,
         "Psychopathology (g)" = overall_psychopathology_4factorv2,
         "Mood" = mood_corrtraitsv2, 
@@ -199,8 +204,8 @@ atypical_qri_df %>%
 
 
 # QRI and Trauma ---------------------------------------------------------------
-lm(formula = aQRI ~ trauma_type + sex + age + I(age^2), data = atypical_qri_df) %>% 
-    report::report()
+lm(formula = aQRI ~ trauma_type + sex + age, data = atypical_qri_df) %>% 
+    summary()
 
 traumatype_qri_boxplot <- atypical_qri_df %>%
     ggplot(aes(x = trauma_type, y = aQRI)) +
@@ -215,7 +220,7 @@ traumatype_qri_boxplot <- atypical_qri_df %>%
             label.y = c(0.07, 0.09, 0.11),
             label = "p.signif"
         ) +
-        labs(x = "", y = "Averaged Quantile Regression Index (aQRI)") +
+        labs(x = "Trauma Type", y = "Averaged Quantile Regression Index (aQRI)") +
         theme_pander() +
         theme(plot.margin = margin(2, 2, 2, 2, "mm"))
 traumatype_qri_boxplot 
@@ -223,14 +228,14 @@ ggsave(filename = here("outputs", "figs", "traumatype_qri_boxplot.pdf"),
        plot = traumatype_qri_boxplot, width = 6, height = 4)
 
 
-
+# Linear Effect of TSE and aQRI on Functioning ---------------------------------
 fit <- atypical_qri_df %>% 
-    lm(formula = overall_functioning ~ tse_ar + aQRI + sex * age + I(age^2) + envSES)
+    lm(formula = overall_functioning ~ tse + aQRI + sex * age + race2 + medu1 + envSES)
 
+summary(fit)
 fit %>% 
     lm.beta::lm.beta() %>% 
     broom::tidy(conf.int = TRUE)
 broom::glance(fit)
 report::report(fit)
-#sjPlot::plot_model(fit, type = "pred", terms = c("tse_ar", "aQRI [0, 0.1]"))
 
