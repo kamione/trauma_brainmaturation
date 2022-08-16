@@ -25,15 +25,15 @@ tse_distplot <- atypical_df %>%
 tsl_distplot <- atypical_df %>% 
     ggplot(aes(x = tse_ar)) +
         geom_histogram(binwidth = 0.5) +
-        labs(x = "Age-adjusted Traumatic Stress Load (a.u.)") +
-        theme_pander()
+        labs(x = "Age-and-sex-adjusted Traumatic Stress Load (a.u.)") +
+        theme_pander() 
 
 ggarrange(tse_distplot, tsl_distplot, nrow = 2) %>% 
     ggexport(filename = here("outputs", "figs", "tse_distributions.pdf"),
-             width = 6, height = 8)
+             width = 6, height = 6)
 
 
-# Table ------------------------------------------------------------------------
+ # Table ------------------------------------------------------------------------
 tse_comparison_table <- atypical_df %>% 
     mutate(tse_ar_rank = ntile(tse, 3)) %>% 
     bind_rows(normativel_df %>% mutate(tse_ar_rank = 0)) %>% 
@@ -101,50 +101,59 @@ corr_tse_outcomes
 
 tse_psychopathology_scatterplot <- atypical_df %>% 
     ggplot(aes(x = tse_ar, y = overall_psychopathology_4factorv2)) +
-        geom_point(color = "grey30", alpha = 0.9, size = 3) +
+        #geom_point(color = "grey30", alpha = 0.9, size = 3) +
+        geom_hex(binwidth = c(0.25, 0.25)) +
+        scale_fill_gradient(low = "grey70", high = "grey10") +
         geom_smooth(method = "lm", color = "tomato3", fill = "grey80") +
         annotate(
             geom = "text", 
             x = 4, 
-            y = -1.9, 
+            y = -3, 
             label = "italic(r)==0.24*','~italic(p)<0.001", 
             size = 4.5, 
             parse = TRUE
         ) +
-        labs(x = "Age-adjusted Traumatic Stress Load",
+        ylim(-3, 3) +
+        labs(x = "Age-and-sex-adjusted Traumatic Stress Load",
              y = "Psychopathology (g)") +
         theme_pander() +
         theme(legend.position = "none", plot.margin = margin(2, 2, 2, 2, "mm"))
 tse_cognition_scatterplot <- atypical_df %>% 
     ggplot(aes(x = tse_ar, y = Overall_Efficiency_Ar)) +
-        geom_point(color = "grey30", alpha = 0.9, size = 3) +
+        #geom_point(color = "grey30", alpha = 0.9, size = 3) +
+        geom_hex(binwidth = c(0.25, 0.25)) +
+        scale_fill_gradient(low = "grey70", high = "grey10") +
         geom_smooth(method = "lm", color = "tomato3", fill = "grey80") +
         annotate(
             geom = "text", 
             x = 4, 
-            y = -7, 
-            label = "italic(r)==-0.09*','~italic(p)==0.006", 
+            y = -3, 
+            label = "italic(r)==-0.09*','~italic(p)==0.005", 
             size = 4.5, 
             parse = TRUE
         ) +
-        labs(x = "Age-adjusted Traumatic Stress Load",
+        ylim(-3, 3) +
+        labs(x = "Age-and-sex-adjusted Traumatic Stress Load",
              y = "Cognitive Efficiency (g)") +
         theme_pander() +
         theme(legend.position = "none", plot.margin = margin(2, 2, 2, 2, "mm"))
 tse_tbv_scatterplot <- atypical_df %>% 
     mutate(mprage_antsCT_vol_TBV = as.numeric(scale(mprage_antsCT_vol_TBV))) %>% 
     ggplot(aes(x = tse_ar, y = mprage_antsCT_vol_TBV)) +
-        geom_point(color = "grey30", alpha = 0.8, size = 3) +
+        #geom_point(color = "grey30", alpha = 0.8, size = 3) +
+        geom_hex(binwidth = c(0.25, 0.25)) +
+        scale_fill_gradient(low = "grey70", high = "grey10") +
         geom_smooth(method = "lm", color = "tomato3", fill = "grey80") +
         annotate(
             geom = "text", 
             x = 4, 
-            y = -2.8, 
-            label = "italic(r)==-0.05*','~italic(p)==0.108", 
+            y = -3, 
+            label = "italic(r)==-0.09*','~italic(p)==0.005", 
             size = 4.5, 
             parse = TRUE
         ) +
-        labs(x = "Age-adjusted Traumatic Stress Load",
+        ylim(-3, 3) +
+        labs(x = "Age-and-sex-adjusted Traumatic Stress Load",
              y = "Total Brain Volume") +
         theme_pander() +
         theme(legend.position = "none", plot.margin = margin(2, 2, 2, 2, "mm"))
