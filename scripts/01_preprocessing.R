@@ -120,7 +120,7 @@ preprocessed_df <- t1_qa %>%
 
 preprocessed_df$tse_ar <- preprocessed_df %>% 
     #lm(formula = tse ~ sex * age + I(age^2)) %>% 
-    lm(formula = tse ~ age) %>% 
+    lm(formula = tse ~ age * sex) %>% 
     resid()
 preprocessed_df$srs <- preprocessed_df %>% 
     lm(formula = -overall_functioning ~ tse) %>% 
