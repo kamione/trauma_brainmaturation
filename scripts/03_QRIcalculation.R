@@ -40,8 +40,12 @@ for (label in all_labels) {
         rq(formula = region_formula, tau = 0.95)
     
     
-    pred_005_ci <- stats::predict(fit_005, newdata = atypical_df, interval = "confidence") %>% as_tibble()
-    pred_095_ci <- stats::predict(fit_095, newdata = atypical_df, interval = "confidence") %>% as_tibble()
+    pred_005_ci <- stats::predict(
+        fit_005, newdata = atypical_df, interval = "confidence"
+    ) %>% as_tibble()
+    pred_095_ci <- stats::predict(
+        fit_095, newdata = atypical_df, interval = "confidence"
+    ) %>% as_tibble()
     
     score <- atypical_df %>%
         select(all_of(label)) %>% 
@@ -64,7 +68,12 @@ atypical_qri_df <- qri_score %>%
     rowwise() %>% 
     mutate(aQRI = mean(c_across(all_of(all_labels)), na.rm = TRUE)) %>% 
     ungroup() %>% 
-    right_join(atypical_df %>% select(-all_of(all_labels)) , by = c("bblid", "scanid"))
+    right_join(
+        atypical_df %>% select(-all_of(all_labels)) , by = c("bblid", "scanid")
+    )
 
 # save data for next scripts
-write_rds(atypical_qri_df, here("data", "processed", "preprocessed_data_atypical_withQRI.rds"))
+write_rds(
+    atypical_qri_df,
+    here("data", "processed", "preprocessed_data_atypical_withQRI.rds")
+)
