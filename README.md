@@ -14,6 +14,8 @@ Last update: 30 Aug 2022
 
 ## Description
 
+This repository stores codes and relevant files for this project.
+
 ![](outputs/figs/figure1.png)
 
 <!-- Citation -->
