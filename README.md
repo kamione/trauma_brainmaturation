@@ -1,7 +1,7 @@
 <div align="center">
 <!-- Title -->
 
-# Traumatic stress load and stressor reactivity score associated with accelerated gray matter maturation indexed by normative models
+# Traumatic stress load and stressor reactivity score associated with accelerated gray matter maturation in youths indexed by normative models
 
 <div align="left">
 <!-- Badges -->
