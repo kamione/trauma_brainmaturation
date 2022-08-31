@@ -14,6 +14,8 @@ Last update: 30 Aug 2022
 
 ## Description
 
+![](outputs/figs/figure1.png)
+
 <!-- Citation -->
 
 ## Citation
