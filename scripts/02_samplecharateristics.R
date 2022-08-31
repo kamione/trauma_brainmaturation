@@ -5,6 +5,18 @@ library(ggpubr)
 library(ggthemes)
 library(gt)
 library(gtsummary)
+library(patchwork)
+library(flextable)
+library(officer)
+
+# docx page setup
+sect_properties <- prop_section(
+    page_size = page_size(),
+    type = "continuous",
+    page_margins = page_mar(
+        bottom = 0.5, top = 0.5, right = 0.5, left = 0.5, gutter = 0
+    )
+)
 
 
 # Data I/O ---------------------------------------------------------------------
@@ -15,25 +27,32 @@ normativel_df <- filter(preprocessed_df, is_td == 1 & tse == 0)
 atypical_df <- filter(preprocessed_df, !c(is_td == 1 & tse == 0))
 
 
-# Distribution -----------------------------------------------------------------
+# TSE Distribution -------------------------------------------------------------
 tse_distplot <- atypical_df %>% 
     ggplot(aes(x = tse)) +
      geom_histogram(binwidth = 1) +
-        labs(x = "Traumatic Stress Load") +
-        theme_pander()
+        labs(x = "Traumatic Stress Load")
 
 tsl_distplot <- atypical_df %>% 
     ggplot(aes(x = tse_ar)) +
         geom_histogram(binwidth = 0.5) +
-        labs(x = "Age-and-sex-adjusted Traumatic Stress Load (a.u.)") +
-        theme_pander() 
+        labs(x = "Age-and-sex-adjusted Traumatic Stress Load (a.u.)")
 
-ggarrange(tse_distplot, tsl_distplot, nrow = 2) %>% 
-    ggexport(filename = here("outputs", "figs", "tse_distributions.pdf"),
-             width = 6, height = 6)
+tse_distribution_plot <- tse_distplot / 
+    tsl_distplot &
+    theme_pander() +
+    theme(plot.margin = margin(5, 5, 5, 5, "mm"))
+tse_distribution_plot
+
+tse_distribution_plot %>% 
+    ggexport(
+        filename = here("outputs", "figs", "tse_distributions.pdf"),
+        width = 6, 
+        height = 6
+    )
 
 
- # Table ------------------------------------------------------------------------
+# Table ------------------------------------------------------------------------
 tse_comparison_table <- atypical_df %>% 
     mutate(tse_ar_rank = ntile(tse, 3)) %>% 
     bind_rows(normativel_df %>% mutate(tse_ar_rank = 0)) %>% 
@@ -54,7 +73,7 @@ tse_comparison_table <- atypical_df %>%
             race2 ~ "Race",
             medu1 ~ "Maternal Education",
             envSES ~ "Environmental SES",
-            overall_functioning ~ "Overall Functioning",
+            overall_functioning ~ "Functioning Composite Score",
             overall_psychopathology_4factorv2 ~ "Psychopathology (g)",
             mood_corrtraitsv2 ~ "Mood",
             psychosis_corrtraitsv2 ~ "Psychosis",
@@ -78,15 +97,19 @@ tse_comparison_table
 
 tse_comparison_table %>% 
     as_flex_table() %>% 
-    flextable::bold(part = "header") %>% 
-    flextable::save_as_docx(
-        path = here("outputs", "tables", "tse_comparison.docx")
+    fontsize(size = 8.5, part = "all") %>% 
+    padding(padding.top = 1, padding.bottom = 1, part = "all") %>% 
+    bold(part = "header") %>% 
+    set_table_properties(width = 1, layout = "autofit") %>% 
+    save_as_docx(
+        path = here("outputs", "tables", "table1.docx"),
+        pr_section = sect_properties
     )
 
 tse_comparison_table %>% 
     as_gt() %>% 
     gtsave(
-        filename = "tse_comparison.html", 
+        filename = "table1.html", 
         path = here("outputs", "tables")
     )
 
@@ -109,15 +132,13 @@ tse_psychopathology_scatterplot <- atypical_df %>%
             geom = "text", 
             x = 4, 
             y = -3, 
-            label = "italic(r)==0.24*','~italic(p)<0.001", 
+            label = "italic(r)==0.25*','~italic(p)<0.001", 
             size = 4.5, 
             parse = TRUE
         ) +
         ylim(-3, 3) +
         labs(x = "Age-and-sex-adjusted Traumatic Stress Load",
-             y = "Psychopathology (g)") +
-        theme_pander() +
-        theme(legend.position = "none", plot.margin = margin(2, 2, 2, 2, "mm"))
+             y = "Psychopathology (g)")
 tse_cognition_scatterplot <- atypical_df %>% 
     ggplot(aes(x = tse_ar, y = Overall_Efficiency_Ar)) +
         #geom_point(color = "grey30", alpha = 0.9, size = 3) +
@@ -134,9 +155,7 @@ tse_cognition_scatterplot <- atypical_df %>%
         ) +
         ylim(-3, 3) +
         labs(x = "Age-and-sex-adjusted Traumatic Stress Load",
-             y = "Cognitive Efficiency (g)") +
-        theme_pander() +
-        theme(legend.position = "none", plot.margin = margin(2, 2, 2, 2, "mm"))
+             y = "Cognitive Efficiency (g)")
 tse_tbv_scatterplot <- atypical_df %>% 
     mutate(mprage_antsCT_vol_TBV = as.numeric(scale(mprage_antsCT_vol_TBV))) %>% 
     ggplot(aes(x = tse_ar, y = mprage_antsCT_vol_TBV)) +
@@ -154,15 +173,16 @@ tse_tbv_scatterplot <- atypical_df %>%
         ) +
         ylim(-3, 3) +
         labs(x = "Age-and-sex-adjusted Traumatic Stress Load",
-             y = "Total Brain Volume") +
-        theme_pander() +
-        theme(legend.position = "none", plot.margin = margin(2, 2, 2, 2, "mm"))
+             y = "Total Brain Volume")
 
-ggarrange(tse_psychopathology_scatterplot,
-          tse_cognition_scatterplot,
-          tse_tbv_scatterplot,
-          nrow = 1,
-          ncol = 3) %>% 
+tse_ar_scatterplot <- tse_psychopathology_scatterplot +
+    tse_cognition_scatterplot +
+    tse_tbv_scatterplot &
+    theme_pander() +
+    theme(legend.position = "none", plot.margin = margin(2, 2, 2, 2, "mm")) 
+
+tse_ar_scatterplot
+tse_ar_scatterplot %>% 
     ggexport(
         filename = here("outputs", "figs", "tse_ar_scatterplot.pdf"),
         height = 4, width = 14
