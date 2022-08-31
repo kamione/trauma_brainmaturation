@@ -14,11 +14,13 @@ library(lavaan)
 library(flextable)
 library(officer)
 
+# docx page setup
 sect_properties <- prop_section(
-    page_size = page_size(orient = "landscape",
-                          width = 8.3, height = 11.7),
+    page_size = page_size(),
     type = "continuous",
-    page_margins = page_mar()
+    page_margins = page_mar(
+        bottom = 0.5, top = 0.5, right = 0.5, left = 0.5, gutter = 0
+    )
 )
 
 
@@ -50,14 +52,19 @@ atypical_qri_df %>%
     unite("95% CI", CI_low:CI_high, sep = ", ", remove = TRUE) %>% 
     select(-c(S, CI, Method, n_Obs)) %>% 
     flextable() %>% 
+    fontsize(size = 12, part = "all") %>% 
+    padding(padding.top = 1, padding.bottom = 1, part = "all") %>% 
     bold(part = "header") %>% 
-    save_as_docx(path = here("outputs", "tables", "aQRI_centiles_cor_table.docx"), 
-                 pr_section = sect_properties)
+    set_table_properties(width = 1, layout = "autofit") %>% 
+    save_as_docx(
+        path = here("outputs", "tables", "aQRI_centiles_cor_table.docx"), 
+        pr_section = sect_properties
+    )
 
 
 # Correlation between Stress Load and Others -----------------------------------
 atypical_qri_df %>% 
-    select(aQRI, tse_ar,
+    select(aQRI, tse, tse_ar,
            overall_functioning:F4_Executive_Efficiency_Ar) %>% 
     correlation::correlation(method = "spearman", p_adjust = "fdr") %>% 
     as_tibble() %>% 
@@ -71,7 +78,7 @@ corr_res <- atypical_qri_df %>%
     ) %>%
     rename(
         "Age-and-sex-adjusted TSL" = tse_ar,
-        "Overall Functioning" = overall_functioning,
+        "Functioning Composite Score" = overall_functioning,
         "Psychopathology (g)" = overall_psychopathology_4factorv2,
         "Mood" = mood_corrtraitsv2, 
         "Psychosis" = psychosis_corrtraitsv2,
@@ -150,25 +157,25 @@ lapply(output_list, slice, arg1 = c(1, 10)) %>%
     ftExtra::span_header() %>% 
     align(align = "center", part = "all") %>% 
     set_header_labels(
-        outcome = "Outcome Variable",
-        `1_est` = "Standardized Beta",
-        `1_pvalue` = "p value",
-        `1_ci` = "95% CI",
-        `2_est` = "Standardized Beta",
-        `2_pvalue` = "p value",
-        `2_ci` = "95% CI",
-        `1` = "Direct Effect"
+        values = list(
+            outcome = "Outcome Variable",
+            `1_est` = "Standardized Beta",
+            `1_pvalue` = "p value",
+            `1_ci` = "95% CI",
+            `2_est` = "Standardized Beta",
+            `2_pvalue` = "p value",
+            `2_ci` = "95% CI",
+            `1` = "Direct Effect"
+        )
     ) %>% 
+    fontsize(size = 9, part = "all") %>% 
+    padding(padding.top = 1, padding.bottom = 1, part = "all") %>% 
     bold(part = "header") %>% 
-    save_as_docx(path = here("outputs", "tables", "aQRI_meidations.docx"), 
+    set_table_properties(width = 1, layout = "autofit") %>% 
+    save_as_docx(path = here("outputs", "tables", "table2.docx"), 
                  pr_section = sect_properties)
 
 # overall functioning
-psych::mediate(overall_functioning ~ tse_ar + (aQRI),
-               data = atypical_qri_df,
-               std = TRUE,
-               n.iter = 1000) %>%
-    print(short = FALSE)
 set.seed(1234)
 model <- glue(
     ' # direct effect
@@ -191,7 +198,8 @@ fit <- sem(model,
 summary(fit, fit.measure = TRUE, standardized = TRUE, ci = TRUE)
 standardizedSolution(fit)
 
-# check if sex effect on aQRI exists -------------------------------------------
+# aQRI and Sex -----------------------------------------------------------------
+# no sex difference found
 wilcox.test(formula = aQRI ~ sex, data = atypical_qri_df)
 atypical_qri_df %>% 
     mutate(tse_ar_rank = factor(ntile(tse_ar, 3))) %>% 
@@ -203,7 +211,7 @@ atypical_qri_df %>%
         theme(plot.margin = margin(2, 2, 2, 2, "mm"))
 
 
-# QRI and Trauma ---------------------------------------------------------------
+# QRI and Trauma Type ----------------------------------------------------------
 lm(formula = aQRI ~ trauma_type + sex + age, data = atypical_qri_df) %>% 
     summary()
 
