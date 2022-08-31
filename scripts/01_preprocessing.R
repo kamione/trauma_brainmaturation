@@ -119,14 +119,10 @@ preprocessed_df <- t1_qa %>%
     drop_na()
 
 preprocessed_df$tse_ar <- preprocessed_df %>% 
-    #lm(formula = tse ~ sex * age + I(age^2)) %>% 
     lm(formula = tse ~ age * sex) %>% 
     resid()
 preprocessed_df$srs <- preprocessed_df %>% 
     lm(formula = -overall_functioning ~ tse) %>% 
     resid()
-#preprocessed_df$srs_ses <- preprocessed_df %>% 
-#    lm(formula = -overall_functioning ~ tse + envSES + medu1) %>% 
-#    resid()
 
 write_rds(preprocessed_df, here("data", "processed", "preprocessed_data.rds"))
