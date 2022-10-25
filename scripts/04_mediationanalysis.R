@@ -247,3 +247,13 @@ fit %>%
 broom::glance(fit)
 report::report(fit)
 
+# Linear Effect of TSE and aQRI on Functioning controlled for QA ---------------
+fit <- atypical_qri_df %>% 
+    lm(formula = overall_functioning ~ tse + aQRI + sex * age + race2 + medu1 + envSES + averageManualRating)
+
+summary(fit)
+fit %>% 
+    lm.beta::lm.beta() %>% 
+    broom::tidy(conf.int = TRUE)
+broom::glance(fit)
+report::report(fit)

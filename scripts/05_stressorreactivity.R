@@ -101,6 +101,11 @@ atypical_qri_df %>%
     lm(formula = srs ~ aQRI + sex * age + medu1 + envSES + race2) %>% 
     report::report()
 
+# correlation between SRS and aQRI after adjusting for confounding variables + QA
+atypical_qri_df %>% 
+    lm(formula = srs ~ aQRI + sex * age + medu1 + envSES + race2 + averageManualRating) %>% 
+    report::report()
+
 
 # Distributions: QRI against 3 SRS Ranks ---------------------------------------
 density_aqri_bysrs <- atypical_qri_df %>% 
